@@ -1,0 +1,25 @@
+{
+  "name": "ff-comic-rocket",
+  "title": "ff-comic-rocket",
+  "id": "jid1-K4mBUauJ3D816A",
+  "description": "a basic add-on",
+  "author": "",
+  "license": "MPL 2.0",
+  "version": "0.1",
+  "permissions": {
+    "cross-domain-content": ["http://comic-rocket.com/"]
+  },
+  "preferences": [{
+    "name": "comicRocketUrl",
+    "title": "Comic Rocket URL",
+    "description": "Homepage of comic rocket",
+    "type": "string",
+    "value": "http://comic-rocket.com"
+  }, {
+    "name": "comicRocketTimeout",
+    "title": "Comic Rocket Timeout",
+    "description": "Length of time to wait before checking for new feeds (minutes)",
+    "type": "integer",
+    "value": "15"
+  }]
+}
