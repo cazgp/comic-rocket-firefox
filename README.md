@@ -11,4 +11,7 @@ Firefox addon for Comic Rocket
 TODO
 ====
 
-* When there are few unread comics, the panel window is longer than it needs to be.
+* [ ] When there are few unread comics, the panel window is longer than it needs to be.
+* [ ] Indicate which are the new comics - border, colour change, something.
+* [ ] Icon change in the toolbar when there are unread comics.
+* [ ] Completely remove JQuery
