@@ -27,6 +27,28 @@ self.port.on("show", function() {
   titles.css('line-height', height + 'px');
 });
 
+self.port.on("hide", function() {
+  var items = document.getElementsByTagName('li');
+  for(let item of items) {
+    item.classList.remove("new");
+  }
+});
+
+self.port.on("indicateNew", function(new_entries) {
+  var items = document.getElementsByTagName('li');
+  var data_titles = new_entries.map(get_data_title);
+
+  for(let item of items) {
+    var dt = item.getAttribute("data-title");
+    for(t of data_titles) {
+      if(dt == t) {
+        item.classList.add("new");
+        break;
+      }
+    }
+  }
+});
+
 var update_message = function(message) {
   var elem = document.getElementById('message');
   elem.innerHTML = message;
@@ -40,7 +62,7 @@ var update_items = function(items) {
   msg.classList.add('hidden');
   document.getElementById('items').innerHTML = items;
   self.port.emit("resize", {height: 'max', width: 'max'});
-}
+};
 
 var get_message = function(message) {
   if(message == 'no-unread') {
@@ -54,6 +76,10 @@ var get_message = function(message) {
   }
 };
 
+var get_data_title = function(title) {
+  return title.toLowerCase().replace(/ /g, '-');
+};
+
 var get_html = function(items) {
   var entries = ['<ul>'];
   var sorted = Object.keys(items).sort();
@@ -61,7 +87,8 @@ var get_html = function(items) {
     var entry = items[title];
     if(!entry) return;
 
-    entries.push('<li class="item"><a target="_blank" href="' + entry.url + '">');
+    var dt = get_data_title(title);
+    entries.push('<li class="item" data-title="' + dt + '"><a target="_blank" href="' + entry.url + '">');
     if(entry.img) {
       entries.push('<div class="img"><img src="' + comic_rocket_url + '/' + entry.img + '"/></div>');
     } else {

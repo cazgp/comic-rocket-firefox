@@ -72,8 +72,8 @@ exports["test initialise check"] = function(assert) {
       "progress": "2/3"
     }
   };
-  let num_new = comic_rocket.count_new(new_comics);
-  assert.equal(num_new, 0);
+  let new_entries = comic_rocket.get_new(new_comics);
+  assert.equal(new_entries, 0);
 };
 
 exports["test check no new"] = function(assert) {
@@ -85,8 +85,8 @@ exports["test check no new"] = function(assert) {
     }
   };
   comic_rocket.set_comics(new_comics);
-  let num_new = comic_rocket.count_new(new_comics);
-  assert.equal(num_new, 0);
+  let new_entries = comic_rocket.get_new(new_comics);
+  assert.deepEqual(new_entries, []);
 };
 
 exports["test check new comic"] = function(assert) {
@@ -103,8 +103,8 @@ exports["test check new comic"] = function(assert) {
     }
   };
   comic_rocket.set_comics(old_comics);
-  let num_new = comic_rocket.count_new(new_comics);
-  assert.equal(num_new, 1);
+  let new_entries = comic_rocket.get_new(new_comics);
+  assert.deepEqual(["test2"], new_entries);
 };
 
 exports["test check new progress"] = function(assert) {
@@ -121,8 +121,8 @@ exports["test check new progress"] = function(assert) {
     }
   };
   comic_rocket.set_comics(old_comics);
-  let num_new = comic_rocket.count_new(new_comics);
-  assert.equal(num_new, 1);
+  let new_entries = comic_rocket.get_new(new_comics);
+  assert.deepEqual(["test"], new_entries);
 };
 
 exports["test check new mix"] = function(assert) {
@@ -155,8 +155,8 @@ exports["test check new mix"] = function(assert) {
     }
   };
   comic_rocket.set_comics(old_comics);
-  let num_new = comic_rocket.count_new(new_comics);
-  assert.equal(num_new, 2);
+  let new_entries = comic_rocket.get_new(new_comics);
+  assert.deepEqual(["test", "test3"], new_entries);
 };
 
 require("sdk/test").run(exports);

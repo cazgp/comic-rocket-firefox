@@ -32,6 +32,10 @@ ul {
   margin: 2px 0;
 }
 
+.item.new {
+  background: none;
+}
+
 .item a {
   width: 100%;
   display: inline-block;
@@ -41,6 +45,10 @@ ul {
 .item a:visited {
   color: #FFF;
   text-decoration: none;
+}
+
+.item.new a {
+  color: #51493D;
 }
 
 #items .img,
