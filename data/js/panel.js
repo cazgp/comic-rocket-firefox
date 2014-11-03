@@ -21,10 +21,12 @@ self.port.on("data", function(data) {
 
 self.port.on("show", function() {
   var aspectRatio = 7.8;
-  var height = $('body').width() * 0.75 / 7.8;
-  var titles = $('.item');
-  titles.height(height);
-  titles.css('line-height', height + 'px');
+  var height = (document.documentElement.clientWidth * 0.75 / aspectRatio) + 'px';
+  var titles = document.getElementsByClassName('item');
+  for(let title of titles) {
+    title.style.height = height;
+    title.style.lineHeight = height;
+  }
 });
 
 self.port.on("hide", function() {

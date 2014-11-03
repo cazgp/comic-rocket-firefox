@@ -14,4 +14,3 @@ TODO
 
 * [ ] When there are few unread comics, the panel window is longer than it needs to be.
 * [ ] Icon change in the toolbar when there are unread comics.
-* [ ] Completely remove JQuery
