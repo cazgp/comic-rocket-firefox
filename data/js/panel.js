@@ -64,6 +64,10 @@ self.port.on("reading", function(comic, number) {
         item.parentNode.removeChild(item);
         return;
       }
+      var url = item.getElementsByTagName('a')[0];
+      var num = parseInt(number) + 1;
+      var href = url.href.replace(/(\d+)(\?mark)/, num + "$2");
+      url.href = href;
       progress.firstChild.textContent = split.join('/');
 
       // Also remove the 'new' class from the item as clearly the user is aware it's new
