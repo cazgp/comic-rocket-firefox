@@ -1,6 +1,7 @@
 const {Cu} = require("chrome");
 const {TextDecoder, OS} = Cu.import("resource://gre/modules/osfile.jsm");
 var comic_rocket = require("./comic-rocket");
+var comic_rocket_url = "http://comic-rocket.com/read/";
 
 var decoder = new TextDecoder();
 var parse_wrapper = function(filename) {
@@ -21,6 +22,7 @@ exports["test parser all unread"] = function(assert, done) {
   parse_wrapper("html/webcomic-unread.html").then(function(parsed) {
     let expected = {
       "BINARY": {
+        "dt": "binary",
         "url":"http://www.comic-rocket.com/read/binary/2?mark",
         "progress":"1/95","img":"/public/banner/binary.jpg"
       }
@@ -34,11 +36,13 @@ exports["test parser read unread"] = function(assert, done) {
   parse_wrapper("html/webcomic-read-unread.html").then(function(parsed) {
     let expected = {
       "Girls with Slingshots": {
+        "dt": "girls-with-slingshots",
         "url":"http://www.comic-rocket.com/read/girls-with-slingshots/2009?mark",
         "progress":"2008/2009",
         "img":"/public/banner/girls-with-slingshots_1.png"
       },
       "Schlock Mercenary": {
+        "dt": "schlock-mercenary",
         "url":"http://www.comic-rocket.com/read/schlock-mercenary/169?mark",
         "progress":"168/5222"
       }
@@ -92,13 +96,15 @@ exports["test check no new"] = function(assert) {
 exports["test check new comic"] = function(assert) {
   let old_comics = {
     "test1": {
-      "url": "test1",
+      "dt": "test1",
+      "url": comic_rocket_url + "test1",
       "progress": "2/3"
     }
   };
   let new_comics = {
     "test2": {
-      "url": "test2",
+      "dt": "test2",
+      "url": comic_rocket_url + "test2",
       "progress": "2/3"
     }
   };
@@ -110,13 +116,15 @@ exports["test check new comic"] = function(assert) {
 exports["test check new progress"] = function(assert) {
   let old_comics = {
     "test": {
-      "url": "test",
+      "dt": "test",
+      "url": comic_rocket_url + "test",
       "progress": "2/3"
     }
   };
   let new_comics = {
     "test": {
-      "url": "test",
+      "dt": "test",
+      "url": comic_rocket_url + "test",
       "progress": "2/5"
     }
   };
@@ -128,29 +136,35 @@ exports["test check new progress"] = function(assert) {
 exports["test check new mix"] = function(assert) {
   let old_comics = {
     "test": {
-      "url": "test",
+      "dt": "test",
+      "url": comic_rocket_url + "test",
       "progress": "2/3"
     },
     "test1": {
-      "url": "test1",
+      "dt": "test1",
+      "url": comic_rocket_url + "test1",
       "progress": "89/100"
     },
     "test2": {
-      "url": "test1",
+      "dt": "test2",
+      "url": comic_rocket_url + "test2",
       "progress": "1/50"
     }
   };
   let new_comics = {
     "test": {
-      "url": "test",
+      "dt": "test",
+      "url": comic_rocket_url + "test",
       "progress": "2/5"
     },
     "test1": {
-      "url": "test1",
+      "dt": "test1",
+      "url": comic_rocket_url + "test1",
       "progress": "95/100"
     },
     "test3": {
-      "url": "test3",
+      "dt": "test3",
+      "url": comic_rocket_url + "test3",
       "progress": "1/50"
     }
   };

@@ -1,5 +1,4 @@
 var comic_rocket_url;
-var old_items;
 
 self.port.on("url", function(url) {
   comic_rocket_url = url;
@@ -37,12 +36,10 @@ self.port.on("hide", function() {
 });
 
 self.port.on("indicateNew", function(new_entries) {
-  var items = document.getElementsByTagName('li');
-  var data_titles = new_entries.map(get_data_title);
-
+  var items = get_elements();
   for(let item of items) {
     var dt = item.getAttribute("data-title");
-    for(t of data_titles) {
+    for(let t of new_entries) {
       if(dt == t) {
         item.classList.add("new");
         break;
@@ -51,18 +48,52 @@ self.port.on("indicateNew", function(new_entries) {
   }
 });
 
+// If the user is on the comic rocket website and reading the comics, update plugin's progress
+self.port.on("reading", function(comic, number) {
+  var items = get_elements();
+  for(let item of items) {
+    var dt = item.getAttribute("data-title");
+    if(dt == comic) {
+      var progress = item.getElementsByClassName('progress')[0];
+      var text = progress.firstChild.textContent;
+      var split = text.split('/');
+      split[0] = number;
+      progress.firstChild.textContent = split.join('/');
+
+      // Also remove the 'new' class from the item as clearly the user is aware it's new
+      item.classList.remove('new');
+      break;
+    }
+  }
+});
+
+var get_elements = function*() {
+  var items = document.getElementsByTagName('li');
+  for(let item of items) {
+    yield item;
+  }
+};
+
+var clear_element = function(elem) {
+  while(elem.firstChild) {
+    elem.removeChild(elem.firstChild);
+  }
+};
+
 var update_message = function(message) {
   var elem = document.getElementById('message');
-  elem.innerHTML = message;
+  elem.firstChild.nodeValue = message;
   elem.classList.remove('hidden');
   self.port.emit("resize", {height: 150, width: 'max'});
 };
 
 var update_items = function(items) {
   var msg = document.getElementById('message');
-  msg.innerHTML = '';
+  clear_element(msg);
   msg.classList.add('hidden');
-  document.getElementById('items').innerHTML = items;
+  var elem = document.getElementById('items');
+  clear_element(elem);
+  elem.appendChild(items);
   self.port.emit("resize", {height: 'max', width: 'max'});
 };
 
@@ -78,27 +109,50 @@ var get_message = function(message) {
   }
 };
 
-var get_data_title = function(title) {
-  return title.toLowerCase().replace(/ /g, '-');
-};
-
 var get_html = function(items) {
-  var entries = ['<ul>'];
+  var entries = document.createElement('ul');
   var sorted = Object.keys(items).sort();
   sorted.forEach(function(title) {
     var entry = items[title];
     if(!entry) return;
 
-    var dt = get_data_title(title);
-    entries.push('<li class="item" data-title="' + dt + '"><a target="_blank" href="' + entry.url + '">');
+    // Create the li to hold the item
+    var li = document.createElement('li');
+    li.classList.add("item");
+    li.setAttribute("data-title", entry.dt);
+
+    // Create the anchor link
+    var a = document.createElement('a');
+    a.href = entry.url;
+    a.target = "_blank";
+
+    var clicker;
+    // If there's an image
     if(entry.img) {
-      entries.push('<div class="img"><img src="' + comic_rocket_url + '/' + entry.img + '"/></div>');
+      var img = document.createElement('img');
+      img.src = comic_rocket_url + '/' + entry.img;
+
+      // Wrap in a div
+      clicker = document.createElement('div');
+      clicker.classList.add('img');
+      clicker.appendChild(img);
     } else {
-      entries.push('<span class="title">' + title + '</span>');
+      clicker = document.createElement('span');
+      clicker.classList.add('title');
+      clicker.appendChild(document.createTextNode(title));
     }
-    entries.push('<span class="progress">' + entry.progress + '</span>');
-    entries.push('</a></li>');
+
+    var progress = document.createElement('span');
+    progress.classList.add('progress');
+    progress.appendChild(document.createTextNode(entry.progress));
+
+    a.onclick = function() {
+      this.parentElement.classList.remove('new');
+    };
+    a.appendChild(clicker);
+    a.appendChild(progress);
+    li.appendChild(a);
+    entries.appendChild(li);
   });
-  entries.push('</ul>');
-  return entries.join('');
+  return entries;
 };
