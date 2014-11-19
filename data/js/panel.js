@@ -58,6 +58,12 @@ self.port.on("reading", function(comic, number) {
       var text = progress.firstChild.textContent;
       var split = text.split('/');
       split[0] = number;
+
+      // If we're at the end of the comic, remove from screen
+      if(split[0] == split[1]) {
+        item.parentNode.removeChild(item);
+        return;
+      }
       progress.firstChild.textContent = split.join('/');
 
       // Also remove the 'new' class from the item as clearly the user is aware it's new
