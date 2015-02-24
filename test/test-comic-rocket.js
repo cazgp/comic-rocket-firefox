@@ -4,69 +4,6 @@ var comic_rocket = require("./comic-rocket");
 var comic_rocket_url = "http://comic-rocket.com/read/";
 
 var decoder = new TextDecoder();
-var parse_wrapper = function(filename) {
-  return OS.File.read(filename).then(function(array) {
-    return comic_rocket.parse_entries(decoder.decode(array));
-  });
-};
-
-exports["test parser all read"] = function(assert, done) {
-  parse_wrapper("html/webcomic-read.html").then(function(parsed) {
-    let expected = 'no-unread';
-    assert.equal(parsed, expected);
-    done();
-  });
-};
-
-exports["test parser all unread"] = function(assert, done) {
-  parse_wrapper("html/webcomic-unread.html").then(function(parsed) {
-    let expected = {
-      "BINARY": {
-        "dt": "binary",
-        "url":"http://www.comic-rocket.com/read/binary/2?mark",
-        "progress":"1/95","img":"/public/banner/binary.jpg"
-      }
-    }
-    assert.deepEqual(parsed, expected);
-    done();
-  });
-};
-
-exports["test parser read unread"] = function(assert, done) {
-  parse_wrapper("html/webcomic-read-unread.html").then(function(parsed) {
-    let expected = {
-      "Girls with Slingshots": {
-        "dt": "girls-with-slingshots",
-        "url":"http://www.comic-rocket.com/read/girls-with-slingshots/2009?mark",
-        "progress":"2008/2009",
-        "img":"/public/banner/girls-with-slingshots_1.png"
-      },
-      "Schlock Mercenary": {
-        "dt": "schlock-mercenary",
-        "url":"http://www.comic-rocket.com/read/schlock-mercenary/169?mark",
-        "progress":"168/5222"
-      }
-    };
-    assert.deepEqual(parsed, expected);
-    done();
-  });
-};
-
-exports["test parser new user"] = function(assert, done) {
-  parse_wrapper("html/webcomic-new-user.html").then(function(parsed) {
-    let expected = "new-user";
-    assert.equal(parsed, expected);
-    done();
-  });
-};
-
-exports["test parser not logged in"] = function(assert, done) {
-  parse_wrapper("html/webcomic-not-logged-in.html").then(function(parsed) {
-    let expected = "not-logged-in";
-    assert.equal(parsed, expected);
-    done();
-  });
-};
 
 exports["test initialise check"] = function(assert) {
   let new_comics = {

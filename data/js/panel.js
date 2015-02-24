@@ -77,6 +77,15 @@ self.port.on("reading", function(comic, number) {
   }
 });
 
+var resize = function() {
+  var body = document.body;
+  var html = document.documentElement;
+
+  var height = Math.max( body.scrollHeight, body.offsetHeight,
+                         html.clientHeight, html.scrollHeight, html.offsetHeight );
+  self.port.emit('resize', {height: height});
+};
+
 var get_elements = function*() {
   var items = document.getElementsByTagName('li');
   for(let item of items) {
@@ -92,9 +101,9 @@ var clear_element = function(elem) {
 
 var update_message = function(message) {
   var elem = document.getElementById('message');
-  elem.firstChild.nodeValue = message;
+  elem.textContent = message;
   elem.classList.remove('hidden');
-  self.port.emit("resize", {height: 150, width: 'max'});
+  resize();
 };
 
 var update_items = function(items) {
@@ -104,7 +113,7 @@ var update_items = function(items) {
   var elem = document.getElementById('items');
   clear_element(elem);
   elem.appendChild(items);
-  self.port.emit("resize", {height: 'max', width: 'max'});
+  resize();
 };
 
 var get_message = function(message) {
@@ -119,28 +128,25 @@ var get_message = function(message) {
   }
 };
 
-var get_html = function(items) {
+var get_html = function(comics) {
   var entries = document.createElement('ul');
-  var sorted = Object.keys(items).sort();
-  sorted.forEach(function(title) {
-    var entry = items[title];
-    if(!entry) return;
-
+  for(var comic of comics) {
     // Create the li to hold the item
     var li = document.createElement('li');
     li.classList.add("item");
-    li.setAttribute("data-title", entry.dt);
+    li.setAttribute("data-title", comic.slug);
 
     // Create the anchor link
     var a = document.createElement('a');
-    a.href = entry.url;
+    a.href = 'http://comic-rocket.com/read/' + comic.slug + '/' + (comic.idx + 1) + '?mark';
     a.target = "_blank";
 
     var clicker;
+
     // If there's an image
-    if(entry.img) {
+    if(comic.banner_url) {
       var img = document.createElement('img');
-      img.src = comic_rocket_url + '/' + entry.img;
+      img.src = comic.banner_url;
 
       // Wrap in a div
       clicker = document.createElement('div');
@@ -149,12 +155,12 @@ var get_html = function(items) {
     } else {
       clicker = document.createElement('span');
       clicker.classList.add('title');
-      clicker.appendChild(document.createTextNode(title));
+      clicker.appendChild(document.createTextNode(comic.name));
     }
 
     var progress = document.createElement('span');
     progress.classList.add('progress');
-    progress.appendChild(document.createTextNode(entry.progress));
+    progress.appendChild(document.createTextNode(comic.idx + '/' + comic.max_idx));
 
     a.onclick = function() {
       this.parentElement.classList.remove('new');
@@ -163,6 +169,7 @@ var get_html = function(items) {
     a.appendChild(progress);
     li.appendChild(a);
     entries.appendChild(li);
-  });
+  }
+
   return entries;
 };
