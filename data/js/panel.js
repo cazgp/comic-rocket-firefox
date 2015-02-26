@@ -39,12 +39,12 @@ self.port.on("indicateNew", function(new_entries) {
   var items = get_elements();
   for(let item of items) {
     var dt = item.getAttribute("data-title");
-    for(let t of new_entries) {
-      if(dt == t) {
+    new_entries.forEach(function(entry) {
+      if(dt == entry) {
         item.classList.add("new");
-        break;
+        return;
       }
-    }
+    });
   }
 });
 
@@ -133,7 +133,7 @@ var get_html = function(comics) {
   for(var comic of comics) {
     // Create the li to hold the item
     var li = document.createElement('li');
-    li.classList.add("item");
+    li.classList.add('item');
     li.setAttribute("data-title", comic.slug);
 
     // Create the anchor link
