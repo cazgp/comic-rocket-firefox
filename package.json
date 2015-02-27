@@ -5,27 +5,33 @@
   "description": "a basic add-on",
   "author": "",
   "license": "MPL 2.0",
-  "version": "0.6.2",
+  "version": "0.7",
   "permissions": {
     "cross-domain-content": ["http://comic-rocket.com/"]
   },
   "preferences": [{
     "name": "extensions.comicrocket.url",
-    "title": "Comic Rocket URL",
-    "description": "Homepage of comic rocket",
+    "title": "Comic Rocket homepage",
     "type": "string",
-    "value": "http://comic-rocket.com"
+    "value": "http://comic-rocket.com/",
+    "hidden": true
+  }, {
+    "name": "extensions.comicrocket.api",
+    "title": "API base",
+    "type": "string",
+    "value": "api/1/",
+    "hidden": true
   }, {
     "name": "extensions.comicrocket.timeout",
-    "title": "Comic Rocket Timeout",
-    "description": "Length of time to wait before checking for new feeds (minutes)",
+    "title": "Timeout",
+    "description": "length of time to wait before checking for new feeds (minutes)",
     "type": "integer",
-    "value": "15"
+    "value": 15
   }, {
-    "name": "extensions.comicrocket.api-base",
-    "title": "Comic Rocket URL",
-    "description": "Homepage of comic rocket",
+    "name": "extensions.comicrocket.hidden",
+    "title": "Hidden comics",
+    "description": "List of comics which are not shown on the add-on. Remove a comic from this list to have it shown. Note: this must be a comma followed by a space or else it won't work.",
     "type": "string",
-    "value": "http://comic-rocket.com/api/1/"
+    "value": ""
   }]
 }

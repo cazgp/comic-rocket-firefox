@@ -1,9 +1,3 @@
-var comic_rocket_url;
-
-self.port.on("url", function(url) {
-  comic_rocket_url = url;
-});
-
 self.port.on("loading", function() {
   document.getElementById('loading').classList.remove('hidden');
 });
@@ -81,7 +75,7 @@ var resize = function() {
   var body = document.body;
   var html = document.documentElement;
 
-  var height = Math.max( body.scrollHeight, body.offsetHeight,
+  var height = Math.max( body.scrollHeight, body.offsetHeight, body.clientHeight,
                          html.clientHeight, html.scrollHeight, html.offsetHeight );
   self.port.emit('resize', {height: height});
 };
@@ -130,7 +124,7 @@ var get_message = function(message) {
 
 var get_html = function(comics) {
   var entries = document.createElement('ul');
-  for(var comic of comics) {
+  comics.forEach(function(comic) {
     // Create the li to hold the item
     var li = document.createElement('li');
     li.classList.add('item');
@@ -162,14 +156,26 @@ var get_html = function(comics) {
     progress.classList.add('progress');
     progress.appendChild(document.createTextNode(comic.idx + '/' + comic.max_idx));
 
+    var hide = document.createElement('span');
+    hide.classList.add('hide');
+    // hide.classList.add(comic.slug);
+    var hideLink = document.createElement('a');
+    hideLink.href = '#';
+    hideLink.appendChild(document.createTextNode('\u00D7'));
+    hideLink.onclick = function() {
+      self.port.emit('hidden', comic.name);
+    };
+    hide.appendChild(hideLink);
+
     a.onclick = function() {
       this.parentElement.classList.remove('new');
     };
     a.appendChild(clicker);
     a.appendChild(progress);
     li.appendChild(a);
+    li.appendChild(hide);
     entries.appendChild(li);
-  }
+  });
 
   return entries;
 };
