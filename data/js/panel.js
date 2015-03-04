@@ -1,25 +1,17 @@
+/* jshint browser: true, esnext: true */
+/* global self,console */
+var reading, not_reading;
+var itemsShown = true;
+
 self.port.on("loading", function() {
   document.getElementById('loading').classList.remove('hidden');
 });
 
-self.port.on("data", function(data) {
+self.port.on("data", function(r, nr) {
   document.getElementById('loading').classList.add('hidden');
-  // If there are no unread comics, the person is a new user, or not logged in
-  if(typeof(data) == "string") {
-    update_message(get_message(data));
-  } else {
-    update_items(get_html(data));
-  }
-});
-
-self.port.on("show", function() {
-  var aspectRatio = 7.8;
-  var height = (document.documentElement.clientWidth * 0.75 / aspectRatio) + 'px';
-  var titles = document.getElementsByClassName('item');
-  for(let title of titles) {
-    title.style.height = height;
-    title.style.lineHeight = height;
-  }
+  reading = r;
+  not_reading = nr;
+  toggle_display(false);
 });
 
 self.port.on("hide", function() {
@@ -29,62 +21,50 @@ self.port.on("hide", function() {
   }
 });
 
-self.port.on("indicateNew", function(new_entries) {
-  var items = get_elements();
-  for(let item of items) {
-    var dt = item.getAttribute("data-title");
-    new_entries.forEach(function(entry) {
-      if(dt == entry) {
-        item.classList.add("new");
-        return;
-      }
-    });
+self.port.on('indicateNew', function(new_entries) {
+  var selectors = new_entries.map(function(title) {
+    return 'li[data-title="' + title + '"]';
+  });
+  var elements = document.querySelectorAll(selectors);
+  for(var i = 0; i < elements.length; elements++) {
+    elements[i].classList.add('new');
   }
 });
 
 // If the user is on the comic rocket website and reading the comics, update plugin's progress
-self.port.on("reading", function(comic, number) {
-  var items = get_elements();
-  for(let item of items) {
-    var dt = item.getAttribute("data-title");
-    if(dt == comic) {
-      var progress = item.getElementsByClassName('progress')[0];
-      var text = progress.firstChild.textContent;
-      var split = text.split('/');
-      split[0] = number;
+self.port.on('reading', function(comic, number) {
+  var element = document.querySelector('li[data-title="' + comic + '"]');
+  var progress = element.getElementsByClassName('progress')[0];
+  var text = progress.firstChild.textContent;
+  var split = text.split('/');
+  split[0] = number;
 
-      // If we're at the end of the comic, remove from screen
-      if(split[0] == split[1]) {
-        item.parentNode.removeChild(item);
-        return;
-      }
-      var url = item.getElementsByTagName('a')[0];
-      var num = parseInt(number) + 1;
-      var href = url.href.replace(/(\d+)(\?mark)/, num + "$2");
-      url.href = href;
-      progress.firstChild.textContent = split.join('/');
-
-      // Also remove the 'new' class from the item as clearly the user is aware it's new
-      item.classList.remove('new');
-      break;
-    }
+  // If we're at the end of the comic, remove from screen
+  if(split[0] == split[1]) {
+    element.parentNode.removeChild(element);
+    return;
   }
+
+  var url = element.getElementsByTagName('a')[0];
+  var num = parseInt(number) + 1;
+  var href = url.href.replace(/(\d+)(\?mark)/, num + "$2");
+  url.href = href;
+  progress.firstChild.textContent = split.join('/');
+
+  // Also remove the 'new' class from the item as clearly the user is aware it's new
+  element.classList.remove('new');
 });
 
 var resize = function() {
-  var body = document.body;
-  var html = document.documentElement;
+  var header = document.getElementById('header');
+  var message = document.getElementById('message');
+  var r = document.getElementById('reading');
+  var nr = document.getElementById('not-reading');
 
-  var height = Math.max( body.scrollHeight, body.offsetHeight, body.clientHeight,
-                         html.clientHeight, html.scrollHeight, html.offsetHeight );
+  var height = header.offsetHeight + 20 +
+    Math.max(r.offsetHeight, nr.offsetHeight, message.offsetHeight);
+
   self.port.emit('resize', {height: height});
-};
-
-var get_elements = function*() {
-  var items = document.getElementsByTagName('li');
-  for(let item of items) {
-    yield item;
-  }
 };
 
 var clear_element = function(elem) {
@@ -94,19 +74,14 @@ var clear_element = function(elem) {
 };
 
 var update_message = function(message) {
+  var nr = document.getElementById('not-reading');
+  var r = document.getElementById('reading');
+  nr.classList.add('hidden');
+  r.classList.add('hidden');
+
   var elem = document.getElementById('message');
   elem.textContent = message;
   elem.classList.remove('hidden');
-  resize();
-};
-
-var update_items = function(items) {
-  var msg = document.getElementById('message');
-  clear_element(msg);
-  msg.classList.add('hidden');
-  var elem = document.getElementById('items');
-  clear_element(elem);
-  elem.appendChild(items);
   resize();
 };
 
@@ -120,9 +95,10 @@ var get_message = function(message) {
   if(message == 'new-user') {
     return "You are not currently subscribed to any comics.";
   }
+  return message;
 };
 
-var get_html = function(comics) {
+var get_html = function(comics, create_symbol, cb) {
   var entries = document.createElement('ul');
   comics.forEach(function(comic) {
     // Create the li to hold the item
@@ -155,17 +131,10 @@ var get_html = function(comics) {
     var progress = document.createElement('span');
     progress.classList.add('progress');
     progress.appendChild(document.createTextNode(comic.idx + '/' + comic.max_idx));
-
-    var hide = document.createElement('span');
-    hide.classList.add('hide');
-    // hide.classList.add(comic.slug);
-    var hideLink = document.createElement('a');
-    hideLink.href = '#';
-    hideLink.appendChild(document.createTextNode('\u00D7'));
-    hideLink.onclick = function() {
-      self.port.emit('hidden', comic.name);
+    var symbol = create_symbol();
+    symbol.onclick = function(event) {
+      cb(event, comic.name);
     };
-    hide.appendChild(hideLink);
 
     a.onclick = function() {
       this.parentElement.classList.remove('new');
@@ -173,9 +142,96 @@ var get_html = function(comics) {
     a.appendChild(clicker);
     a.appendChild(progress);
     li.appendChild(a);
-    li.appendChild(hide);
+    li.appendChild(symbol);
     entries.appendChild(li);
   });
 
   return entries;
+};
+
+var menu = document.getElementById('menu');
+menu.onclick = function() { toggle_display(true) };
+
+var refresh = document.getElementById('refresh');
+refresh.onclick = function() {
+  self.port.emit('refresh');
+};
+
+var update_display = function(config) {
+  // Hide any messaeges
+  var msg = document.getElementById('message');
+  clear_element(msg);
+  msg.classList.add('hidden');
+
+  // Hide the other menu
+  var toHide = document.getElementById(config.toHide);
+  toHide.classList.add('hidden');
+
+  // Grab the one to show
+  var toShow = document.getElementById(config.toShow);
+  toShow.classList.remove('hidden');
+
+  var create_symbol = function() {
+    // Generate the icon to display next to each comic item.
+    // (Eye or cross depending on what screen we're on).
+    var symbol = document.createElement('span');
+    symbol.classList.add('icon-' + config.icon);
+
+    var link = document.createElement('a');
+    link.href = '#';
+    link.classList.add(config.symb);
+    link.appendChild(symbol);
+    return link;
+  };
+
+  var html = get_html(config.data, create_symbol, function(event, name) {
+    // If we're hiding
+    if(config.icon === 'cancel') {
+      self.port.emit('hiding-comic', name);
+    } else {
+      self.port.emit('showing-comic', name);
+    }
+  });
+
+  clear_element(toShow);
+  toShow.appendChild(html);
+  resize();
+};
+
+// Updates what's on screen and also toggles if wanted.
+var toggle_display = function(changeMode) {
+  var config;
+  // If changeMode is true, we want opposite of itemsShown.
+  // Otherwise we want itemsShown.
+  var toggler = changeMode ? itemsShown : !itemsShown;
+
+  if(toggler) {
+    config = {
+      toHide: 'reading',
+      toShow: 'not-reading',
+      symb: 'show',
+      icon: 'eye',
+      data: not_reading
+    };
+  } else {
+    config = {
+      toHide: 'not-reading',
+      toShow: 'reading',
+      symb: 'hide',
+      icon: 'cancel',
+      data: reading
+    };
+  }
+
+  if(changeMode) {
+    itemsShown = !itemsShown;
+    menu.classList.toggle('selected');
+  }
+
+  if(typeof config.data === 'string') {
+    update_message(get_message(config.data));
+  } else {
+    update_display(config);
+  }
+  return false;
 };
