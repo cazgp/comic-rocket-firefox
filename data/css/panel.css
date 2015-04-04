@@ -1,6 +1,7 @@
 html, body, div, ul, li {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 body {
@@ -79,6 +80,7 @@ ul {
   margin: 2px 0;
   height: 36px;
   line-height: 36px;
+  overflow-y: hidden;
 }
 
 .item.new {
